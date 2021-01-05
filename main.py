@@ -59,28 +59,34 @@ def init_population():
         population.append(individual)
     return population
 
+def do_one_gengeration(population):
+    #選択
+    population = selection(population)
+
+    # 少なくなった分の個体を交叉と突然変異によって生成
+    n = POPULATION_SIZE - len(population)
+    for i in range(n):
+        r1 = random.randint(0, len(population) -1)
+        r2 = random.randint(0, len(population) -1)
+        # 交叉
+        individual = crossover(population[r1], population[r2])
+        # 突然変異
+        individual = mutation(individual)
+        # 集団に追加
+        population.append(individual)
+    return population
+
+def print_population(population):
+    for individual in population:
+        print(individual)
+
 # メイン処理
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
     population = init_population()
-
     for generation in range(GENERATION):
         print(str(generation + 1) + u"世代")
+        population = do_one_gengeration(population)
+        print_population(population)
 
-        #選択
-        population = selection(population)
-
-        # 少なくなった分の個体を交叉と突然変異によって生成
-        n = POPULATION_SIZE - len(population)
-        for i in range(n):
-            r1 = random.randint(0, len(population) -1)
-            r2 = random.randint(0, len(population) -1)
-            # 交叉
-            individual = crossover(population[r1], population[r2])
-            # 突然変異
-            individual = mutation(individual)
-            # 集団に追加
-            population.append(individual)
         
-        for individual in population:
-            print(individual)
