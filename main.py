@@ -6,8 +6,8 @@ import copy
 LIST_SIZE = 10 # 0/1リスト長（遺伝子長）
 
 POPULATION_SIZE = 10 # 集団の個体数
-GENERATION = 25 # 世代数
-MUTATE = 0.1 # 突然異変の確率
+GENERATION = 50 # 世代数
+MUTATE_RATE = 0.1 # 突然異変の確率
 SELECT_RATE = 0.5 # 選択割合
 
 # 適応度を計算する
@@ -46,36 +46,41 @@ def crossover(ind1, ind2):
 def mutation(ind1):
     ind2 = copy.deepcopy(ind1)
     for i in range(LIST_SIZE):
-        if random.random() < MUTATE:
+        if random.random() < MUTATE_RATE:
             ind2[i] =  random.randint(0,1)
     return ind2
 
+def init_population():
+    population = []
+    for i in range(POPULATION_SIZE):
+        individual =  []
+        for j in range(LIST_SIZE):
+            individual.append(random.randint(0,1))
+        population.append(individual)
+    return population
+
 # メイン処理
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
-population = []
-for i in range(POPULATION_SIZE):
-    individual =  []
-    for j in range(LIST_SIZE):
-        individual.append(random.randint(0,1))
-    population.append(individual)
+if __name__ == '__main__':
+    population = init_population()
 
-for generation in range(GENERATION):
-    print(str(generation + 1) + u"世代")
+    for generation in range(GENERATION):
+        print(str(generation + 1) + u"世代")
 
-    #選択
-    population = selection(population)
+        #選択
+        population = selection(population)
 
-    # 少なくなった分の個体を交叉と突然変異によって生成
-    n = POPULATION_SIZE - len(population)
-    for i in range(n):
-        r1 = random.randint(0, len(population) -1)
-        r2 = random.randint(0, len(population) -1)
-        # 交叉
-        individual = crossover(population[r1], population[r2])
-        # 突然変異
-        individual = mutation(individual)
-        # 集団に追加
-        population.append(individual)
-    
-    for individual in population:
-        print(individual)
+        # 少なくなった分の個体を交叉と突然変異によって生成
+        n = POPULATION_SIZE - len(population)
+        for i in range(n):
+            r1 = random.randint(0, len(population) -1)
+            r2 = random.randint(0, len(population) -1)
+            # 交叉
+            individual = crossover(population[r1], population[r2])
+            # 突然変異
+            individual = mutation(individual)
+            # 集団に追加
+            population.append(individual)
+        
+        for individual in population:
+            print(individual)
