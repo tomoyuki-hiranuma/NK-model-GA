@@ -37,10 +37,12 @@ def selection(population):
 # 交叉（ランダムな範囲をr1,r2に置き換える）
 def crossover(ind1, ind2):
     r1 = random.randint(0, LIST_SIZE -1)
-    r2 = random.randint(r1 + 1, LIST_SIZE)
-    ind = copy.deepcopy(ind1)
-    ind[r1:r2] = ind2[r1:r2]
-    return ind
+    # r2 = random.randint(r1 + 1, LIST_SIZE)
+    child1 = copy.deepcopy(ind1)
+    child2 = copy.deepcopy(ind2)
+    child1[0:r1] = ind2[0:r1]
+    child2[0:r1] = ind1[0:r1]
+    return child1, child2
 
 # 突然変異（10%の確率で遺伝子を変化）
 def mutation(ind1):
@@ -65,15 +67,19 @@ def do_one_gengeration(population):
 
     # 少なくなった分の個体を交叉と突然変異によって生成
     n = POPULATION_SIZE - len(population)
-    for i in range(n):
+    for i in range(n//2):
         r1 = random.randint(0, len(population) -1)
         r2 = random.randint(0, len(population) -1)
+        while r1 == r2:
+            r2 = random.randint(0, len(population) -1)
         # 交叉
-        individual = crossover(population[r1], population[r2])
+        child1, child2 = crossover(population[r1], population[r2])
         # 突然変異
-        individual = mutation(individual)
+        child1 = mutation(child1)
+        child2 = mutation(child2)
         # 集団に追加
-        population.append(individual)
+        population.append(child1)
+        population.append(child2)
     return population
 
 def print_population(population):
@@ -84,6 +90,7 @@ def print_population(population):
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
     population = init_population()
+    print_population(population)
     generation_count = 0
     while generation_count <= GENERATION:
         print(str(generation_count + 1) + u"世代")
