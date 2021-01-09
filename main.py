@@ -5,11 +5,11 @@ import copy
 import numpy as np
 
 # パラメーター
-N = 6 # 0/1リスト長（遺伝子長）
+N = 10 # 0/1リスト長（遺伝子長）
 K = 0
 
 POPULATION_SIZE = 10 # 集団の個体数
-GENERATION = 1 # 世代数
+GENERATION = 50 # 世代数
 MUTATE_RATE = 0.1 # 突然異変の確率
 SELECT_RATE = 0.9 # 選択割合
 
@@ -28,9 +28,7 @@ def sort_fitness(population):
     fp = np.array([calc_eval(x) for x in population])
     sorted_index = np.argsort(fp) #昇順のインデックス
     sorted_population = population[sorted_index] #昇順に並び替え
-    # 逆にする
-    sorted_population = sorted_population[::-1]
-    return sorted_population
+    return sorted_population[::-1]
 
 # エリート選択（適応度の高い個体を残す）
 def selection(population):
@@ -138,4 +136,4 @@ if __name__ == '__main__':
     
     ## グラフ
     plt.plot(x, y)
-    # plt.show()
+    plt.show()
