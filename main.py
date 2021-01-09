@@ -4,36 +4,32 @@ import random
 import copy
 import numpy as np
 
-### Todo: numpyに書き換える
-
 # パラメーター
-N = 10 # 0/1リスト長（遺伝子長）
+N = 6 # 0/1リスト長（遺伝子長）
 K = 0
 
 POPULATION_SIZE = 10 # 集団の個体数
-GENERATION = 50 # 世代数
+GENERATION = 1 # 世代数
 MUTATE_RATE = 0.1 # 突然異変の確率
-SELECT_RATE = 0.5 # 選択割合
+SELECT_RATE = 0.9 # 選択割合
+
+def create_NK_landscape(N, K):
+    np.random.seed(1)
+    index = [ f'{i:0{K+1}b}' for i in range(2**(K+1)) ]
+    rand_array = np.random.random(2**(K+1))
+    return dict(zip(index, rand_array))
 
 # 適応度を計算する
-def calc_fitness(individual):
-    return sum(individual) # リスト要素の合計
+def calc_eval(gene):
+    return np.sum(gene)
 
 # 集団を適応度順にソートする
-"""
- Todo: 評価値としてNKモデルでの評価値を採用
-"""
 def sort_fitness(population):
-    fp = []
-    for individual in population:
-        fitness = calc_fitness(individual)
-        fp.append((fitness, individual))
-    fp.sort(reverse=True)  # 適応度でソート（降順）
-
-    sorted_population = []
-    # リストに入れ直す
-    for fitness,  individual in fp:
-        sorted_population.append(individual)
+    fp = np.array([calc_eval(x) for x in population])
+    sorted_index = np.argsort(fp) #昇順のインデックス
+    sorted_population = population[sorted_index] #昇順に並び替え
+    # 逆にする
+    sorted_population = sorted_population[::-1]
     return sorted_population
 
 # エリート選択（適応度の高い個体を残す）
@@ -62,21 +58,18 @@ def mutation(ind1):
     return ind2
 
 def init_population():
-    population = []
-    for i in range(POPULATION_SIZE):
-        individual =  []
-        for j in range(N):
-            individual.append(random.randint(0,1))
-        population.append(individual)
-    return population
+    return np.random.randint(2, size=(POPULATION_SIZE, N))
 
-def do_one_gengeration(population):
+def do_one_generation(population):
     #選択
     population = selection(population)
 
     # 少なくなった分の個体を交叉と突然変異によって生成
+    """
+    todo: 総入れ替え×　→ 多様性維持の世代交代モデル 
+    """
     n = POPULATION_SIZE - len(population)
-    for i in range(n//2):
+    for i in range(n):
         r1 = random.randint(0, len(population) -1)
         r2 = random.randint(0, len(population) -1)
         while r1 == r2:
@@ -85,10 +78,9 @@ def do_one_gengeration(population):
         child1, child2 = crossover(population[r1], population[r2])
         # 突然変異
         child1 = mutation(child1)
-        child2 = mutation(child2)
+        # child2 = mutation(child2)
         # 集団に追加
-        population.append(child1)
-        population.append(child2)
+        population = np.vstack((population, child1))
     return population
 
 def print_population(population):
@@ -99,28 +91,44 @@ def get_best_individual(population):
     better_eval = 0.0
     better_gene = []
     for individual in population:
-        fitness = calc_fitness(individual)
+        fitness = calc_eval(individual)
         if better_eval <= fitness:
-          better_eval = fitness
-          better_gene = individual
+            better_eval = fitness
+            better_gene = individual
     return better_gene, better_eval
 
+def get_optimization(N, K):
+    best_gene = ""
+    best_eval = 0.0
+    all_genes = np.array([ f'{i:0{N}b}' for i in range(2**(N)) ])
+    for gene in all_genes:
+        fitness = calc_eval(gene)
+        if best_eval <= fitness:
+            best_eval = fitness
+            best_gene = gene
+    
+    return best_gene, best_eval
+
 # メイン処理
-best_gene = [0 for i in range(N)]
-best_eval = 0.0
+NK_landscape = create_NK_landscape(N, K)
+# BEST_GENE, BEST_EVAL = get_optimization(N, K)
+BEST_GENE = np.array([1 for i in range(N)])
+BEST_EVAL = N
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
     population = init_population()
+    print("0世代")
+    print_population(population)
     generation_count = 0
+    best_eval = 0.0
 
     x = []
     y = []
-
     while generation_count < GENERATION:
-        # print(str(generation_count + 1) + u"世代")
-        population = do_one_gengeration(population)
-        print_population(population)
+        print(str(generation_count + 1) + u"世代")
+        population = do_one_generation(population)
         best_gene, best_eval = get_best_individual(population)
+        print_population(population)
         print("best gene: {}\nbest evaluation: {}".format(best_gene, best_eval))
         generation_count += 1
 
@@ -130,4 +138,4 @@ if __name__ == '__main__':
     
     ## グラフ
     plt.plot(x, y)
-    plt.show()
+    # plt.show()
