@@ -9,9 +9,9 @@ N = 10 # 0/1リスト長（遺伝子長）
 K = 0
 
 POPULATION_SIZE = 10 # 集団の個体数
-GENERATION = 50 # 世代数
+GENERATION = 10 # 世代数
 MUTATE_RATE = 0.1 # 突然異変の確率
-SELECT_RATE = 0.9 # 選択割合
+SELECT_RATE = 0.5 # 選択割合
 
 def create_NK_landscape(N, K):
     np.random.seed(1)
@@ -21,7 +21,15 @@ def create_NK_landscape(N, K):
 
 # 適応度を計算する
 def calc_eval(gene):
-    return np.sum(gene)
+    fitness = 0.0
+    for i in range(len(gene)):
+        index = str(gene[i])
+        for j in range(i+1, i+K+1):
+            index += str(gene[j%N])
+        fitness += NK_landscape[index]
+    fitness /= N
+    return fitness
+    # return np.sum(gene)
 
 # 集団を適応度順にソートする
 def sort_fitness(population):
@@ -45,7 +53,11 @@ def crossover(ind1, ind2):
     child2 = copy.deepcopy(ind2)
     child1[0:r1] = ind2[0:r1]
     child2[0:r1] = ind1[0:r1]
-    return child1, child2
+    child1 = mutation(child1)
+    child2 = mutation(child2)
+    family = np.array([ind1, ind2, child1, child2])
+    sorted_family = sort_fitness(family)
+    return sorted_family[0], sorted_family[1]
 
 # 突然変異（10%の確率で遺伝子を変化）
 def mutation(ind1):
@@ -75,7 +87,7 @@ def do_one_generation(population):
         # 交叉
         child1, child2 = crossover(population[r1], population[r2])
         # 突然変異
-        child1 = mutation(child1)
+        # child1 = mutation(child1)
         # child2 = mutation(child2)
         # 集団に追加
         population = np.vstack((population, child1))
@@ -109,9 +121,8 @@ def get_optimization(N, K):
 
 # メイン処理
 NK_landscape = create_NK_landscape(N, K)
-# BEST_GENE, BEST_EVAL = get_optimization(N, K)
-BEST_GENE = np.array([1 for i in range(N)])
-BEST_EVAL = N
+print(NK_landscape)
+BEST_GENE, BEST_EVAL = get_optimization(N, K)
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
     population = init_population()
@@ -134,6 +145,7 @@ if __name__ == '__main__':
         x.append(generation_count)
         y.append(best_eval)
     
+    print("opt gene: {}\nopt evaluation: {}".format(BEST_GENE, BEST_EVAL))
     ## グラフ
     plt.plot(x, y)
-    plt.show()
+    # plt.show()
