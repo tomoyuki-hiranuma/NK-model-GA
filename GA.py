@@ -112,7 +112,7 @@ def get_mean_eval(population):
     return sum_eval/len(population)
 
 # メイン処理
-MAX_EVALUATION_NUMBER = 2*POPULATION_SIZE*10000
+MAX_EVALUATION_NUMBER = 4*POPULATION_SIZE*10000
 NK_landscape = create_NK_landscape(N, K)
 print(NK_landscape)
 BEST_GENE, BEST_EVAL = get_optimization(N, K)
