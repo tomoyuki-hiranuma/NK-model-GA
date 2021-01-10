@@ -5,14 +5,14 @@ import copy
 import numpy as np
 
 # パラメーター
-N = 10 # 0/1リスト長（遺伝子長）
-K = 0
 
 ROUND = 8 # 総取り替えするであろう回数
 PARENTS_SIZE = 2
 POPULATION_SIZE = 100 # 集団の個体数
 GENERATION = POPULATION_SIZE * ROUND // PARENTS_SIZE # 世代数
 MUTATE_RATE = 0.01 # 突然異変の確率
+
+MAX_EVALUATION_NUMBER = 2*POPULATION_SIZE*10000
 
 def create_NK_landscape(N, K):
     np.random.seed(1)
@@ -112,51 +112,59 @@ def get_mean_eval(population):
     return sum_eval/len(population)
 
 # メイン処理
-MAX_EVALUATION_NUMBER = 4*POPULATION_SIZE*10000
-NK_landscape = create_NK_landscape(N, K)
-print(NK_landscape)
-BEST_GENE, BEST_EVAL = get_optimization(N, K)
+NK_landscape = ""
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
-    population = init_population()
-    print("0世代")
-    print_population(population)
-    generation_count = 0
-    eval_number = PARENTS_SIZE * generation_count
-    best_eval = 0.0
+    N = 20 # 0/1リスト長（遺伝子長）
+    Ks = np.arange(0, N-1, 3)
+    for K in Ks:
+    # create NK model
+        NK_landscape = create_NK_landscape(N, K)
+        print(NK_landscape)
+        BEST_GENE, BEST_EVAL = get_optimization(N, K)
 
-    generations = []
-    elites_evals = []
-    mean_evals = []
-    worst_evals = []
-    mean_eval = 0.0
-    while eval_number < MAX_EVALUATION_NUMBER and BEST_EVAL-mean_eval >= 0.001:
-        print(str(generation_count + 1) + u"世代")
-        population = do_one_generation(population)
-        best_eval, worst_eval = get_best_worst_evals(population)
-       
-        generation_count += 1
-        eval_number = POPULATION_SIZE * generation_count
-        mean_eval = get_mean_eval(population)
+        # GA開始
+        population = init_population()
+        print("0世代")
+        print_population(population)
+        generation_count = 0
+        eval_number = PARENTS_SIZE * generation_count
+        best_eval = 0.0
 
-        print("best evaluation: {}".format(best_eval))
-        print("mean eval: {}".format(mean_eval))
-        print("worst eval: {}".format(worst_eval))
+        generations = []
+        elites_evals = []
+        mean_evals = []
+        worst_evals = []
+        mean_eval = 0.0
+        while eval_number < MAX_EVALUATION_NUMBER and BEST_EVAL-mean_eval >= 0.001:
+            print(str(generation_count + 1) + u"世代")
+            population = do_one_generation(population)
+            best_eval, worst_eval = get_best_worst_evals(population)
+        
+            generation_count += 1
+            eval_number = POPULATION_SIZE * generation_count
+            mean_eval = get_mean_eval(population)
 
-        ### 出力用
-        generations.append(eval_number)
-        elites_evals.append(best_eval)
-        mean_evals.append(mean_eval)
-        worst_evals.append(worst_eval)
-    
-    print("opt gene: {}\nopt evaluation: {}".format(BEST_GENE, BEST_EVAL))
-    ## グラフ
-    plt.plot(generations, elites_evals, label="best eval in population")
-    plt.plot(generations, mean_evals, label="mean eval in population")
-    plt.plot([0, eval_number], [BEST_EVAL, BEST_EVAL], label="Opt Evaluation", color='red', linestyle='--')
-    plt.plot(generations, worst_evals, label="bad eval in population")
-    plt.legend()
-    plt.xlabel("number of evaluation")
-    plt.ylabel("evaluation value")
-    plt.title("NK model N={} K={} POP_SIZE={}".format(N, K, POPULATION_SIZE))
-    plt.show()
+            print("best evaluation: {}".format(best_eval))
+            print("mean eval: {}".format(mean_eval))
+            print("worst eval: {}".format(worst_eval))
+
+            ### 出力用
+            generations.append(eval_number)
+            elites_evals.append(best_eval)
+            mean_evals.append(mean_eval)
+            worst_evals.append(worst_eval)
+        
+        print("opt gene: {}\nopt evaluation: {}".format(BEST_GENE, BEST_EVAL))
+        ## グラフ
+        plt.plot(generations, elites_evals, label="best eval in population")
+        plt.plot(generations, mean_evals, label="mean eval in population")
+        plt.plot([0, eval_number], [BEST_EVAL, BEST_EVAL], label="Opt Evaluation", color='red', linestyle='--')
+        plt.plot(generations, worst_evals, label="bad eval in population")
+        plt.legend()
+        plt.xlabel("number of evaluation")
+        plt.ylabel("evaluation value")
+        plt.title("NK model N={} K={} POP_SIZE={}".format(N, K, POPULATION_SIZE))
+        plt.savefig("./NK_Model_png/N={}_K={}_POP_SIZE={}.png".format(N, K, POPULATION_SIZE))
+        plt.clf()
+    # plt.show()
