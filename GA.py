@@ -5,14 +5,14 @@ import copy
 import numpy as np
 
 # パラメーター
-N = 15 # 0/1リスト長（遺伝子長）
+N = 10 # 0/1リスト長（遺伝子長）
 K = 0
 
 ROUND = 8 # 総取り替えするであろう回数
 PARENTS_SIZE = 2
-POPULATION_SIZE = 75 # 集団の個体数
+POPULATION_SIZE = 100 # 集団の個体数
 GENERATION = POPULATION_SIZE * ROUND // PARENTS_SIZE # 世代数
-MUTATE_RATE = 0.1 # 突然異変の確率
+MUTATE_RATE = 0.01 # 突然異変の確率
 
 def create_NK_landscape(N, K):
     np.random.seed(1)
@@ -30,7 +30,6 @@ def calc_eval(gene):
         fitness += NK_landscape[index]
     fitness /= N
     return fitness
-    # return np.sum(gene)
 
 # 集団を適応度順にソートする
 def sort_fitness(population):
@@ -47,6 +46,7 @@ def crossover(ind1, ind2):
     child2 = copy.deepcopy(ind2)
     child1[0:r1] = ind2[0:r1]
     child2[0:r1] = ind1[0:r1]
+    # 突然変異
     child1 = mutation(child1)
     child2 = mutation(child2)
     family = np.array([ind1, ind2, child1, child2])
@@ -72,11 +72,8 @@ def do_one_generation(population):
     r2 = random.randint(0, len(population) -1)
     while r1 == r2:
         r2 = random.randint(0, len(population) -1)
-    # 交叉
+    # 交叉&突然変異
     child1, child2 = crossover(population[r1], population[r2])
-    # 突然変異
-    # child1 = mutation(child1)
-    # child2 = mutation(child2)
     # 集団に追加
     population[r1] = child1
     population[r2] = child2
@@ -86,15 +83,16 @@ def print_population(population):
     for individual in population:
         print(individual)
         
-def get_best_individual(population):
+def get_best_worst_evals(population):
     better_eval = 0.0
-    better_gene = []
+    worse_eval = 1.0
     for individual in population:
         fitness = calc_eval(individual)
         if better_eval <= fitness:
             better_eval = fitness
-            better_gene = individual
-    return better_gene, better_eval
+        if worse_eval >= fitness:
+            worse_eval = fitness
+    return better_eval, worse_eval
 
 def get_optimization(N, K):
     best_gene = ""
@@ -114,6 +112,7 @@ def get_mean_eval(population):
     return sum_eval/len(population)
 
 # メイン処理
+MAX_EVALUATION_NUMBER = 2*POPULATION_SIZE*10000
 NK_landscape = create_NK_landscape(N, K)
 print(NK_landscape)
 BEST_GENE, BEST_EVAL = get_optimization(N, K)
@@ -123,27 +122,41 @@ if __name__ == '__main__':
     print("0世代")
     print_population(population)
     generation_count = 0
+    eval_number = PARENTS_SIZE * generation_count
     best_eval = 0.0
 
     generations = []
     elites_evals = []
     mean_evals = []
-    while generation_count < GENERATION:
+    worst_evals = []
+    mean_eval = 0.0
+    while eval_number < MAX_EVALUATION_NUMBER and BEST_EVAL-mean_eval >= 0.001:
         print(str(generation_count + 1) + u"世代")
         population = do_one_generation(population)
-        best_gene, best_eval = get_best_individual(population)
-        print_population(population)
-        print("best gene: {}\nbest evaluation: {}".format(best_gene, best_eval))
+        best_eval, worst_eval = get_best_worst_evals(population)
+       
         generation_count += 1
+        eval_number = POPULATION_SIZE * generation_count
+        mean_eval = get_mean_eval(population)
+
+        print("best evaluation: {}".format(best_eval))
+        print("mean eval: {}".format(mean_eval))
+        print("worst eval: {}".format(worst_eval))
 
         ### 出力用
-        generations.append(generation_count)
+        generations.append(eval_number)
         elites_evals.append(best_eval)
-        mean_evals.append(get_mean_eval(population))
+        mean_evals.append(mean_eval)
+        worst_evals.append(worst_eval)
     
     print("opt gene: {}\nopt evaluation: {}".format(BEST_GENE, BEST_EVAL))
     ## グラフ
-    plt.plot(generations, elites_evals)
-    plt.plot(generations, mean_evals)
-    plt.plot([0, GENERATION], [BEST_EVAL, BEST_EVAL])
+    plt.plot(generations, elites_evals, label="best eval in population")
+    plt.plot(generations, mean_evals, label="mean eval in population")
+    plt.plot([0, eval_number], [BEST_EVAL, BEST_EVAL], label="Opt Evaluation", color='red', linestyle='--')
+    plt.plot(generations, worst_evals, label="bad eval in population")
+    plt.legend()
+    plt.xlabel("number of evaluation")
+    plt.ylabel("evaluation value")
+    plt.title("NK model N={} K={} POP_SIZE={}".format(N, K, POPULATION_SIZE))
     plt.show()
