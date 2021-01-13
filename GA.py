@@ -21,27 +21,24 @@ def create_NK_landscape(N, K):
     return dict(zip(index, rand_array))
 
 # 適応度を計算する
-def calc_eval(gene):
+def calc_eval(gene, K):
     fitness = 0.0
+    long_genes = gene + gene
     for i in range(len(gene)):
-        index = str(gene[i])
-        for j in range(i+1, i+K+1):
-            index += str(gene[j%N])
-        fitness += NK_landscape[index]
-    fitness /= N
+        fitness += NK_landscape[long_genes[i:i+K+1]]
+    fitness /= len(gene)
     return fitness
 
 # 集団を適応度順にソートする
-def sort_fitness(population):
-    fp = np.array([calc_eval(x) for x in population])
+def sort_fitness(population, K):
+    fp = np.array([calc_eval(x, K) for x in population])
     sorted_index = np.argsort(fp)[::-1] #降順のインデックス
     sorted_population = population[sorted_index] #降順に並び替え
     return sorted_population
 
 # 1点交叉
-def crossover(ind1, ind2):
+def crossover(ind1, ind2, K):
     r1 = random.randint(1, len(ind1))
-    # r2 = random.randint(r1 + 1, N)
     child1 = copy.deepcopy(ind1[0:r1])
     child2 = copy.deepcopy(ind2[0:r1])
     child1 = child1 + ind2[r1:len(ind2)]
@@ -50,7 +47,7 @@ def crossover(ind1, ind2):
     child1 = mutation(child1)
     child2 = mutation(child2)
     family = np.array([ind1, ind2, child1, child2])
-    sorted_family = sort_fitness(family)
+    sorted_family = sort_fitness(family, K)
     elite_gene = sorted_family[0]
     random_index = np.random.randint(1, len(sorted_family))
     random_gene = sorted_family[random_index]
@@ -68,13 +65,13 @@ def mutation(ind1):
 def init_population(N):
     return np.array([f'{np.random.randint(2**N):0{N}b}' for i in range(POPULATION_SIZE)]).astype(str)
 
-def do_one_generation(population):
+def do_one_generation(population, K):
     r1 = random.randint(0, len(population) -1)
     r2 = random.randint(0, len(population) -1)
     while r1 == r2:
         r2 = random.randint(0, len(population) -1)
     # 交叉&突然変異
-    child1, child2 = crossover(population[r1], population[r2])
+    child1, child2 = crossover(population[r1], population[r2], K)
     # 集団に追加
     population[r1] = child1
     population[r2] = child2
@@ -84,11 +81,11 @@ def print_population(population):
     for individual in population:
         print(individual)
         
-def get_best_worst_evals(population):
+def get_best_worst_evals(population, K):
     better_eval = 0.0
     worse_eval = 1.0
     for individual in population:
-        fitness = calc_eval(individual)
+        fitness = calc_eval(individual, K)
         if better_eval <= fitness:
             better_eval = fitness
         if worse_eval >= fitness:
@@ -100,26 +97,27 @@ def get_optimization(N, K):
     best_eval = 0.0
     all_genes = np.array([ f'{i:0{N}b}' for i in range(2**(N)) ])
     for gene in all_genes:
-        fitness = calc_eval(gene)
+        fitness = calc_eval(gene, K)
         if best_eval <= fitness:
             best_eval = fitness
             best_gene = gene
     return best_gene, best_eval
   
-def get_mean_eval(population):
+def get_mean_eval(population, K):
     sum_eval = 0.0
     for individual in population:
-        sum_eval += calc_eval(individual)
+        sum_eval += calc_eval(individual, K)
     return sum_eval/len(population)
 
 # メイン処理
 NK_landscape = ""
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
-    N = 20 # 0/1リスト長（遺伝子長）
-    Ks = np.arange(0, N-1, 3)
+    N = 10 # 0/1リスト長（遺伝子長）
+    Ks = np.arange(0, N, 3)
     for K in Ks:
     # create NK model
+        print("K: {}のとき".format(K))
         NK_landscape = create_NK_landscape(N, K)
         print(NK_landscape)
         BEST_GENE, BEST_EVAL = get_optimization(N, K)
@@ -139,12 +137,12 @@ if __name__ == '__main__':
         mean_eval = 0.0
         while eval_number < MAX_EVALUATION_NUMBER and BEST_EVAL-mean_eval >= 0.001:
             print(str(generation_count + 1) + u"世代")
-            population = do_one_generation(population)
-            best_eval, worst_eval = get_best_worst_evals(population)
+            population = do_one_generation(population, K)
+            best_eval, worst_eval = get_best_worst_evals(population, K)
         
             generation_count += 1
             eval_number = POPULATION_SIZE * generation_count
-            mean_eval = get_mean_eval(population)
+            mean_eval = get_mean_eval(population, K)
 
             print("best evaluation: {}".format(best_eval))
             print("mean eval: {}".format(mean_eval))
