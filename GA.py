@@ -40,12 +40,12 @@ def sort_fitness(population):
 
 # 1点交叉
 def crossover(ind1, ind2):
-    r1 = random.randint(0, N -1)
+    r1 = random.randint(1, len(ind1))
     # r2 = random.randint(r1 + 1, N)
-    child1 = copy.deepcopy(ind1)
-    child2 = copy.deepcopy(ind2)
-    child1[0:r1] = ind2[0:r1]
-    child2[0:r1] = ind1[0:r1]
+    child1 = copy.deepcopy(ind1[0:r1])
+    child2 = copy.deepcopy(ind2[0:r1])
+    child1 = child1 + ind2[r1:len(ind2)]
+    child2 = child2 + ind1[r1:len(ind1)]
     # 突然変異
     child1 = mutation(child1)
     child2 = mutation(child2)
@@ -58,14 +58,15 @@ def crossover(ind1, ind2):
 
 # 突然変異（10%の確率で遺伝子を変化）
 def mutation(ind1):
-    ind2 = copy.deepcopy(ind1)
+    ind2 = list(copy.deepcopy(ind1))
     for i in range(N):
         if random.random() < MUTATE_RATE:
-            ind2[i] =  random.randint(0,1)
+            ind2[i] = str(1 - int(ind2[i]))
+    ind2 = "".join(ind2)
     return ind2
 
-def init_population():
-    return np.random.randint(2, size=(POPULATION_SIZE, N))
+def init_population(N):
+    return np.array([f'{np.random.randint(2**N):0{N}b}' for i in range(POPULATION_SIZE)]).astype(str)
 
 def do_one_generation(population):
     r1 = random.randint(0, len(population) -1)
@@ -124,7 +125,7 @@ if __name__ == '__main__':
         BEST_GENE, BEST_EVAL = get_optimization(N, K)
 
         # GA開始
-        population = init_population()
+        population = init_population(N)
         print("0世代")
         print_population(population)
         generation_count = 0
