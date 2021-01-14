@@ -76,6 +76,7 @@ if __name__ == '__main__':
 	ga = GeneticAlgorithm(N, K, population_size, mutation_rate)
 	print("===before===")
 	ga.print_pop()
-	ga.do_one_generation()
+	for i in range(50):
+		ga.do_one_generation()
 	print("===after===")
 	ga.print_pop()
