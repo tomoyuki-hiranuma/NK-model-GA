@@ -8,6 +8,12 @@ class NKModel:
 		self.best_eval = 0.0
 		self.best_gene = ""
 
+	def _create_NK_landscape(self):
+		np.random.seed(1)
+		index = [ f'{i:0{self.K+1}b}' for i in range(2**(self.K+1)) ]
+		rand_array = np.random.random(2**(self.K+1))
+		return dict(zip(index, rand_array))
+
 	# 適応度を計算する
 	def calc_eval(self, gene):
 		fitness = 0.0
@@ -29,12 +35,6 @@ class NKModel:
 				best_gene = gene
 		self.best_eval = best_eval
 		self.best_gene = best_gene
-
-	def _create_NK_landscape(self):
-		np.random.seed(1)
-		index = [ f'{i:0{self.K+1}b}' for i in range(2**(self.K+1)) ]
-		rand_array = np.random.random(2**(self.K+1))
-		return dict(zip(index, rand_array))
 
 	@property
 	def get_best_eval(self):
