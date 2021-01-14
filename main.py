@@ -14,6 +14,21 @@ MUTATE_RATE = 0.01 # 突然異変の確率
 
 MAX_EVALUATION_NUMBER = 2*POPULATION_SIZE*10000
 
+def create_NK_landscape(N, K):
+    np.random.seed(1)
+    index = [ f'{i:0{K+1}b}' for i in range(2**(K+1)) ]
+    rand_array = np.random.random(2**(K+1))
+    return dict(zip(index, rand_array))
+
+# 適応度を計算する
+def calc_eval(gene, K):
+    fitness = 0.0
+    long_genes = gene + gene
+    for i in range(len(gene)):
+        fitness += NK_landscape[long_genes[i:i+K+1]]
+    fitness /= len(gene)
+    return fitness
+
 # 集団を適応度順にソートする
 def sort_fitness(population, K):
     fp = np.array([calc_eval(x, K) for x in population])
@@ -47,6 +62,9 @@ def mutation(ind1):
     ind2 = "".join(ind2)
     return ind2
 
+def init_population(N):
+    return np.array([f'{np.random.randint(2**N):0{N}b}' for i in range(POPULATION_SIZE)]).astype(str)
+
 def do_one_generation(population, K):
     r1 = random.randint(0, len(population) -1)
     r2 = random.randint(0, len(population) -1)
@@ -59,6 +77,10 @@ def do_one_generation(population, K):
     population[r2] = child2
     return population
 
+def print_population(population):
+    for individual in population:
+        print(individual)
+        
 def get_best_worst_evals(population, K):
     better_eval = 0.0
     worse_eval = 1.0
@@ -69,6 +91,17 @@ def get_best_worst_evals(population, K):
         if worse_eval >= fitness:
             worse_eval = fitness
     return better_eval, worse_eval
+
+def get_optimization(N, K):
+    best_gene = ""
+    best_eval = 0.0
+    all_genes = np.array([ f'{i:0{N}b}' for i in range(2**(N)) ])
+    for gene in all_genes:
+        fitness = calc_eval(gene, K)
+        if best_eval <= fitness:
+            best_eval = fitness
+            best_gene = gene
+    return best_gene, best_eval
   
 def get_mean_eval(population, K):
     sum_eval = 0.0
@@ -77,6 +110,7 @@ def get_mean_eval(population, K):
     return sum_eval/len(population)
 
 # メイン処理
+NK_landscape = ""
 # 初期集団を生成（ランダムに0/1を10個ずつ並べる）
 if __name__ == '__main__':
     N = 10 # 0/1リスト長（遺伝子長）
