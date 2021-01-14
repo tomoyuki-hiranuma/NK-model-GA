@@ -47,9 +47,6 @@ def mutation(ind1):
     ind2 = "".join(ind2)
     return ind2
 
-def init_population(N):
-    return np.array([f'{np.random.randint(2**N):0{N}b}' for i in range(POPULATION_SIZE)]).astype(str)
-
 def do_one_generation(population, K):
     r1 = random.randint(0, len(population) -1)
     r2 = random.randint(0, len(population) -1)
@@ -62,10 +59,6 @@ def do_one_generation(population, K):
     population[r2] = child2
     return population
 
-def print_population(population):
-    for individual in population:
-        print(individual)
-        
 def get_best_worst_evals(population, K):
     better_eval = 0.0
     worse_eval = 1.0

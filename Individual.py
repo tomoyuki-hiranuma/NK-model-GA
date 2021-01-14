@@ -6,6 +6,9 @@ class Individual:
 		self.gene = f'{np.random.randint(2**individual_size):0{individual_size}b}'
 		self.fitness = 0.0
 
+	def get_gene(self):
+		return self.gene
+
 
 if __name__ == '__main__':
 	N = 4
