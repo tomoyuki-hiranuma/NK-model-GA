@@ -8,10 +8,9 @@ class Population:
 		self.individual_size = individual_size
 		self.array = np.array([ Individual(individual_size) for i in range(population_size)])
 
-
 	def print_array(self):
 		for i in range(len(self.array)):
-			print(self.array[i].gene)
+			print(self.array[i].gene, self.array[i].fitness)
 
 	
 
