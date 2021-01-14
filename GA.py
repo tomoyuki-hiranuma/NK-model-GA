@@ -5,9 +5,11 @@ import numpy as np
 import copy
 
 class GeneticAlgorithm:
-	def __init__(self, N, K, population_size):
+	def __init__(self, N, K, population_size, mutation_rate):
 		self.population = Population(population_size, N)
 		self.nk_model = NKModel(N, K)
+		self.mutation_rate = mutation_rate
+		self.evaluate()
 
 	def do_one_generation(self):
 		parent1_index = np.random.randint(len(self.population.array))
@@ -20,14 +22,15 @@ class GeneticAlgorithm:
         # 交叉
 		child1, child2 = self.crossover(parent1, parent2)
 		# 突然変異
-		child1.mutation(0.1)
-		child2.mutation(0.1)
-		family = Population(4, len(parent1.gene))
-		family.array = np.array([parent1, parent2, child1, child2])
+		child1.mutation(self.mutation_rate)
+		child2.mutation(self.mutation_rate)
+
+		family = np.array([parent1, parent2, child1, child2])
 		elite_individual, random_individual = self.select_individuals(family)
+
 		self.population.array[parent1_index] = copy.deepcopy(elite_individual)
 		self.population.array[parent2_index] = copy.deepcopy(random_individual)
-		self.population = self.calc_evaluation(self.population)
+		self.evaluate()
 
 	def crossover(self, parent1, parent2):
 		point = np.random.randint(1, self.population.individual_size)
@@ -42,17 +45,19 @@ class GeneticAlgorithm:
 			individual.fitness = self.nk_model.calc_eval(individual.gene)
 		return population
 
+	def evaluate(self):
+		self.population = self.calc_evaluation(self.population)
+
 	def sort_fitness(self, population):
-		# population.print_array()
 		population = self.calc_evaluation(population)
 		sorted_population = Population(len(population.array), population.individual_size)
 		sorted_population.array = sorted(population.array, key=lambda x: x.fitness)[::-1] #降順に並べ替え
-		# print("=====sorted====")
-		# sorted_population.print_array()
 		return sorted_population
 
 	def select_individuals(self, family):
-		sorted_family = self.sort_fitness(family)
+		family_population = Population(4, len(self.population.array[0].gene))
+		family_population.array = family
+		sorted_family = self.sort_fitness(family_population)
 		elite_gene = sorted_family.array[0]
 		random_index = np.random.randint(1, len(sorted_family.array))
 		random_gene = sorted_family.array[random_index]
@@ -65,9 +70,10 @@ class GeneticAlgorithm:
 if __name__ == '__main__':
 	N = 5
 	K = 0
-	Population_size = 10
+	population_size = 10
+	mutation_rate = 0.01
 
-	ga = GeneticAlgorithm(N, K, Population_size)
+	ga = GeneticAlgorithm(N, K, population_size, mutation_rate)
 	print("===before===")
 	ga.print_pop()
 	ga.do_one_generation()
