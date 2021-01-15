@@ -72,7 +72,8 @@ class GeneticAlgorithm:
 
 if __name__ == '__main__':
 	N = 10
-	Ks = np.arange(0, N, 3)
+	# Ks = np.arange(0, N, 3)
+	Ks = [1]
 	POPULATION_SIZE = 100
 	MUTATION_RATE = 0.01
 	MAX_NO_OF_EVAL = 40000
@@ -83,7 +84,6 @@ if __name__ == '__main__':
 		## 最適解取得
 		ga.nk_model.calc_optimization()
 		BEST_GENE, BEST_EVAL = ga.nk_model.get_optimized_solution()
-	
 		mean_evals = []
 		best_evals = []
 		worst_evals = []
@@ -110,11 +110,12 @@ if __name__ == '__main__':
 			steps.append(step)
 		
 
-		plt.plot(steps, mean_evals, label="mean")
-		plt.plot(steps, best_evals, label="best")
-		plt.plot(steps, worst_evals, label="worst")
+		plt.plot(steps, mean_evals, label="mean", color="blue")
+		plt.plot(steps, best_evals, label="best", color="green")
+		plt.plot(steps, worst_evals, label="worst", color="black")
 		plt.plot([0, step], [BEST_EVAL, BEST_EVAL], label="opt solution", linestyle="--", color="red")
 		plt.title("N={} K={} PopSize={} NK Model GA".format(N, K, POPULATION_SIZE))
+		plt.legend()
 		plt.savefig("./NK_Model_object_png/N={}_K={}_POP_SIZE={}.png".format(N, K, POPULATION_SIZE))
 		plt.clf()
 
