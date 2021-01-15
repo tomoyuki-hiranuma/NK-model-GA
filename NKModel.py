@@ -9,7 +9,7 @@ class NKModel:
 		self.best_gene = ""
 
 	def _create_NK_landscape(self):
-		np.random.seed(1)
+		# np.random.seed(1)
 		index = [ f'{i:0{self.K+1}b}' for i in range(2**(self.K+1)) ]
 		rand_array = np.random.random(2**(self.K+1))
 		return dict(zip(index, rand_array))

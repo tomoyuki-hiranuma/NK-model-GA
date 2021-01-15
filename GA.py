@@ -71,48 +71,50 @@ class GeneticAlgorithm:
 		return self.population.get_best_mean_worst_evals_array()
 
 if __name__ == '__main__':
-	N = 5
-	K = 0
-	population_size = 10
-	mutation_rate = 0.01
-
-	ga = GeneticAlgorithm(N, K, population_size, mutation_rate)
-	## 最適解取得
-	ga.nk_model.calc_optimization()
-	BEST_GENE, BEST_EVAL = ga.nk_model.get_optimized_solution()
+	N = 10
+	Ks = np.arange(0, N, 3)
+	POPULATION_SIZE = 100
+	MUTATION_RATE = 0.01
 	MAX_NO_OF_EVAL = 40000
 	DIFFERENCE_OPT = 0.01
 
-	mean_evals = []
-	best_evals = []
-	worst_evals = []
-	steps = []
-	step = 0
-	print("初期世代")
-	ga.print_population()
-	evals_array = ga.get_best_mean_worst_evals_array()
-	best_evals.append(evals_array[0])
-	mean_evals.append(evals_array[1])
-	worst_evals.append(evals_array[2])
-	steps.append(step)
-
-	while BEST_EVAL - evals_array[1] > 0.0 and step < MAX_NO_OF_EVAL:
-		print("第{}世代".format(step+1))
-		ga.do_one_generation()
+	for K in Ks:
+		ga = GeneticAlgorithm(N, K, POPULATION_SIZE, MUTATION_RATE)
+		## 最適解取得
+		ga.nk_model.calc_optimization()
+		BEST_GENE, BEST_EVAL = ga.nk_model.get_optimized_solution()
+	
+		mean_evals = []
+		best_evals = []
+		worst_evals = []
+		steps = []
+		step = 0
+		print("初期世代")
 		ga.print_population()
-		step += 1
-
 		evals_array = ga.get_best_mean_worst_evals_array()
 		best_evals.append(evals_array[0])
 		mean_evals.append(evals_array[1])
 		worst_evals.append(evals_array[2])
 		steps.append(step)
-	
 
-	plt.plot(steps, mean_evals, label="mean")
-	plt.plot(steps, best_evals, label="best")
-	plt.plot(steps, worst_evals, label="worst")
-	plt.title("N={} K={} PopSize={} NK Model GA".format(N, K, population_size))
-	plt.show()
+		while BEST_EVAL - evals_array[1] > DIFFERENCE_OPT and step < MAX_NO_OF_EVAL:
+			print("第{}世代".format(step+1))
+			ga.do_one_generation()
+			ga.print_population()
+			step += 1
 
+			evals_array = ga.get_best_mean_worst_evals_array()
+			best_evals.append(evals_array[0])
+			mean_evals.append(evals_array[1])
+			worst_evals.append(evals_array[2])
+			steps.append(step)
+		
+
+		plt.plot(steps, mean_evals, label="mean")
+		plt.plot(steps, best_evals, label="best")
+		plt.plot(steps, worst_evals, label="worst")
+		plt.plot([0, step], [BEST_EVAL, BEST_EVAL], label="opt solution", linestyle="--", color="red")
+		plt.title("N={} K={} PopSize={} NK Model GA".format(N, K, POPULATION_SIZE))
+		plt.savefig("./NK_Model_object_png/N={}_K={}_POP_SIZE={}.png".format(N, K, POPULATION_SIZE))
+		plt.clf()
 
