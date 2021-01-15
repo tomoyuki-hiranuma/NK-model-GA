@@ -3,6 +3,7 @@ from NKModel import NKModel
 from Individual import Individual
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
 
 class GeneticAlgorithm:
 	def __init__(self, N, K, population_size, mutation_rate):
@@ -63,9 +64,11 @@ class GeneticAlgorithm:
 		random_gene = sorted_family.array[random_index]
 		return elite_gene, random_gene
 
-	def print_pop(self):
+	def print_population(self):
 		self.population.print_array()
 
+	def get_best_mean_worst_evals_array(self):
+		return self.population.get_best_mean_worst_evals_array()
 
 if __name__ == '__main__':
 	N = 5
@@ -74,9 +77,42 @@ if __name__ == '__main__':
 	mutation_rate = 0.01
 
 	ga = GeneticAlgorithm(N, K, population_size, mutation_rate)
-	print("===before===")
-	ga.print_pop()
-	for i in range(50):
+	## 最適解取得
+	ga.nk_model.calc_optimization()
+	BEST_GENE, BEST_EVAL = ga.nk_model.get_optimized_solution()
+	MAX_NO_OF_EVAL = 40000
+	DIFFERENCE_OPT = 0.01
+
+	mean_evals = []
+	best_evals = []
+	worst_evals = []
+	steps = []
+	step = 0
+	print("初期世代")
+	ga.print_population()
+	evals_array = ga.get_best_mean_worst_evals_array()
+	best_evals.append(evals_array[0])
+	mean_evals.append(evals_array[1])
+	worst_evals.append(evals_array[2])
+	steps.append(step)
+
+	while BEST_EVAL - evals_array[1] > 0.0 and step < MAX_NO_OF_EVAL:
+		print("第{}世代".format(step+1))
 		ga.do_one_generation()
-	print("===after===")
-	ga.print_pop()
+		ga.print_population()
+		step += 1
+
+		evals_array = ga.get_best_mean_worst_evals_array()
+		best_evals.append(evals_array[0])
+		mean_evals.append(evals_array[1])
+		worst_evals.append(evals_array[2])
+		steps.append(step)
+	
+
+	plt.plot(steps, mean_evals, label="mean")
+	plt.plot(steps, best_evals, label="best")
+	plt.plot(steps, worst_evals, label="worst")
+	plt.title("N={} K={} PopSize={} NK Model GA".format(N, K, population_size))
+	plt.show()
+
+
