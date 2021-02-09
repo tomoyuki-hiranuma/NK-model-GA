@@ -8,11 +8,10 @@ class Individual:
 		self.fitness = 0.0
 
 	def mutation(self, mutation_rate):
-		ind2 = list(copy.deepcopy(self.gene))
+		ind2 = copy.deepcopy(self.gene)
 		for i in range(len(ind2)):
 			if np.random.random() < mutation_rate:
-				ind2[i] = str(1 - int(ind2[i]))
-		ind2 = "".join(ind2)
+				ind2[i] = 1 - ind2[i]
 		self.gene = ind2
 
 

@@ -37,8 +37,8 @@ class GeneticAlgorithm:
 		point = np.random.randint(1, self.population.individual_size)
 		child1 = Individual(self.population.individual_size)
 		child2 = Individual(self.population.individual_size)
-		child1.gene = parent1.gene[0:point] + parent2.gene[point:self.population.individual_size]
-		child2.gene = parent2.gene[0:point] + parent1.gene[point:self.population.individual_size]
+		child1.gene = np.hstack((parent1.gene[0:point], parent2.gene[point:self.population.individual_size]))
+		child2.gene = np.hstack((parent2.gene[0:point], parent1.gene[point:self.population.individual_size]))
 		return np.array([child1, child2])
 	
 	def calc_evaluation(self, population):
