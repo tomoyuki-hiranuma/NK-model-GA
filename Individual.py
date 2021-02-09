@@ -4,7 +4,7 @@ import copy
 
 class Individual:
 	def __init__(self, individual_size):
-		self.gene = f'{np.random.randint(2**individual_size):0{individual_size}b}'
+		self.gene = np.random.randint(2, size=individual_size)
 		self.fitness = 0.0
 
 	def mutation(self, mutation_rate):

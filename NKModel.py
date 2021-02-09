@@ -17,9 +17,14 @@ class NKModel:
 	# 適応度を計算する
 	def calc_eval(self, gene):
 		fitness = 0.0
-		long_genes = gene + gene
+		long_genes = np.hstack((gene, gene))
 		for i in range(len(gene)):
-			fitness += self.nk_landscape[long_genes[i:i+self.K+1]]
+			print(long_genes[i:i+self.K+1])
+			element = ""
+			for j in long_genes[i:i+self.K+1]:
+				element += str(j)
+			print(element)
+			fitness += self.nk_landscape[element]
 		fitness /= len(gene)
 		return fitness
 
@@ -28,6 +33,7 @@ class NKModel:
 		best_gene = ""
 		best_eval = 0.0
 		all_genes = np.array([ f'{i:0{self.N}b}' for i in range(2**(self.N)) ])
+		all_genes = self._to_np_int(all_genes)
 		for gene in all_genes:
 			fitness = self.calc_eval(gene)
 			if best_eval <= fitness:
@@ -35,6 +41,16 @@ class NKModel:
 				best_gene = gene
 		self.best_eval = best_eval
 		self.best_gene = best_gene
+
+	def _to_np_int(self, binary_array):
+		new_genes = []
+		for gene in binary_array:
+			gene = list(gene)
+			genes = []
+			for num in gene:
+				genes.append(int(num))
+			new_genes.append(np.array(genes))
+		return np.array(new_genes)
 
 	@property
 	def get_best_eval(self):
