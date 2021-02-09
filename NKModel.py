@@ -19,11 +19,9 @@ class NKModel:
 		fitness = 0.0
 		long_genes = np.hstack((gene, gene))
 		for i in range(len(gene)):
-			print(long_genes[i:i+self.K+1])
 			element = ""
 			for j in long_genes[i:i+self.K+1]:
 				element += str(j)
-			print(element)
 			fitness += self.nk_landscape[element]
 		fitness /= len(gene)
 		return fitness
